@@ -1,0 +1,72 @@
+---
+- hosts: windows
+  tasks:
+    - name: hostname
+      debug:
+        var=ansible_hostname
+
+    - name: date and time
+      vars:
+       msg: |
+        Date: {{ ansible_date_time.date }}
+        Timezone: {{ ansible_date_time.tz }}
+      debug:
+       msg: "{{ msg.split('\n') }}"
+
+
+#    - name: programe files
+#      debug:
+#        var=ansible_env.ProgramFiles
+
+#   - name: shell
+#      win_stat:
+#        path: C:\Program Files
+#      register: out_put
+#    - name: win_shell
+#      win_shell: cat "{{C:\Program Files}}"
+#      register: sample_f
+
+#    - name: display
+#      debug: var="{{sample_f.stdout}}"
+
+#     - name: copy file back to ansible machine from windows
+#      fetch:
+#         src: C:\Program Files
+#         dest: /home/ansadm
+#         flat: yes
+#       delegate_to: localhost
+
+      - name: get conntents of file
+        command: cat C:\Program Files
+        register: filename
+        become: true
+
+      - name: viewing the contents
+        debug:
+          msg: "{{filename.stdout}}
+
+#    - name: get conntents of file
+#      win_command: cat.exe " C:\Program Files"
+#      register: filename
+
+#    - name: viewing the contents
+#      debug:
+#        msg: "{{filename.stdout}}"
+----------------------------------------------
+# get all facts for dbservers, required for webserver template
+- hosts: dbservers
+  gather_facts: true
+
+- hosts: webservers
+  tasks:
+
+    - template: src=hosts.j2 dest=/etc/hosts
+-----------------
+127.0.0.1 localhost
+
+{% for host in groups['dbservers'] %}
+   {{ hostvars[host]['ansible_eth0']['ipv4']['address'] }} {{ host }}
+{% endfor %}
+------------------------------------------
+
+C:\temp\servers.txt
